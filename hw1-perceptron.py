@@ -36,24 +36,28 @@ class Perceptron:
         x_i (n_features,): a single training example
         y_i (scalar): the gold label for that example
         """
-        # Todo: Q1 1(a)
-        pass
+        self.W[y_i] = self.W[y_i] + x_i
 
     def train_epoch(self, X, y):
         """
         X (n_examples, n_features): features for the whole dataset
         y (n_examples,): labels for the whole dataset
         """
-        # Todo: Q1 1(a)
-        pass
+        y_hat = self.predict(X)
+        for i in range(X.shape[0]):
+            pred_class = np.argmax(y_hat[i])
+            true_class = y[i]
+            if pred_class != true_class:
+                self.update_weight(X[i], true_class)
+                self.update_weight(-X[i], pred_class)
+
 
     def predict(self, X):
         """
         X (n_examples, n_features)
         returns predicted labels y_hat, whose shape is (n_examples,)
         """
-        # Todo: Q1 1(a)
-        pass
+        return (self.W @ X.T).T
 
     def evaluate(self, X, y):
         """
@@ -62,8 +66,16 @@ class Perceptron:
 
         returns classifier accuracy
         """
-        # Todo: Q1 1(a)
-        pass
+        y_hat = self.predict(X)
+        num_correct = 0
+        for i in range(X.shape[0]):
+            pred_class = np.argmax(y_hat[i])
+            true_class = y[i]
+            if pred_class == true_class:
+                num_correct += 1
+
+        accuracy = num_correct/X.shape[0]
+        return accuracy
 
 
 def main(args):
@@ -104,9 +116,10 @@ def main(args):
 
         print('train acc: {:.4f} | val acc: {:.4f}'.format(train_acc, valid_acc))
 
-        # Todo: Q1(a)
-        # Decide whether to save the model to args.save_path based on its
-        # validation score
+        if valid_acc > best_valid:
+            best_valid = valid_acc
+            best_epoch = i
+            model.save(args.save_path)
 
     elapsed_time = time.time() - start
     minutes = int(elapsed_time // 60)
