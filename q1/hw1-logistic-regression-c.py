@@ -343,7 +343,7 @@ if __name__ == '__main__':
                         help="Path to the dataset")
     parser.add_argument("--seed", type=int, default=42,
                         help="Random seed for reproducibility")
-    parser.add_argument("--checkpoint-dir", type=str, default="q1/checkpoints/checkpoint-lr-c.pickle",
+    parser.add_argument("--checkpoint-dir", type=str, default="q1/checkpoints/checkpoint-lr-c",
                         help="Directory to save model checkpoints")
     parser.add_argument("--scores", type=str, default="q1/scores/Q1-lr-scores-c.json",
                         help="Path to save results JSON file")
