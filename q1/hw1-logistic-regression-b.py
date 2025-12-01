@@ -85,11 +85,46 @@ class LogisticRegressor:
 def feature_extractor(X):
     """
     X: (n_examples, 785) - flattened 28x28 images + bias term
-    Returns: (n_examples, 2353) - original pixels + horizontal edges + vertical edges + bias
+    Returns: (n_examples, 1226) - original pixels + HOG features + bias
 
-    Applies edge detection using gradient-based filters (Sobel-like):
-    - Horizontal edges: detect vertical strokes
-    - Vertical edges: detect horizontal strokes
+    Applies Histogram of Oriented Gradients (HOG) feature extraction:
+    - Computes gradient magnitude and orientation at each pixel
+    - Divides 28x28 image into 7x7 grid of 4x4 pixel cells
+    - Creates 9-bin histogram of gradient orientations per cell (0-180 degrees)
+    - Results in 7x7x9 = 441 HOG features per image
+
+    JUSTIFICATION FOR HOG FEATURES:
+    Research shows that HOG features significantly improve handwritten character
+    recognition accuracy compared to raw pixels, especially for linear classifiers:
+
+    1. Local gradient feature descriptors significantly outperform raw pixel intensities.
+       When combined with classifiers like SVM, they achieve very high accuracies on
+       handwritten datasets (Thai, Latin, Bangla). [1]
+
+    2. Gradient features from gray-scale images yield the best performance in feature
+       extraction studies for handwritten digit recognition. [2]
+
+    3. Histogram of Oriented Gradients (HOG) descriptors are invariant to geometric
+       transformation and are among the best descriptors for character recognition.
+       Experiments show using HOG to extract features improves recognition rates. [3]
+
+    4. Switching to gradient-based features improves system performance significantly
+       compared to using raw pixels. Linear SVMs achieve competitive performance when
+       using carefully designed gradient features. [4]
+
+    5. CNNs' initial layers naturally learn to extract edge features, demonstrating
+       their importance. By manually extracting HOG features, we give the linear
+       model access to orientation patterns that make deep learning successful. [5]
+
+    HOG specifically captures stroke orientation, which is critical for distinguishing
+    letters like 'I' (vertical), 'T' (horizontal+vertical), 'O' (circular), etc.
+
+    Sources:
+    [1] https://www.sciencedirect.com/science/article/abs/pii/S0952197615001724
+    [2] https://www.sciencedirect.com/science/article/abs/pii/S0031320303002243
+    [3] https://www.researchgate.net/publication/269329013
+    [4] https://www2.eecs.berkeley.edu/Pubs/TechRpts/2009/EECS-2009-159.pdf
+    [5] https://pmc.ncbi.nlm.nih.gov/articles/PMC7349603/
     """
     n_examples = X.shape[0]
 
@@ -100,24 +135,60 @@ def feature_extractor(X):
     # Reshape to (n_examples, 28, 28)
     X_reshaped = X_pixels.reshape(n_examples, 28, 28)
 
-    # Compute horizontal gradients (detects vertical edges)
-    # Approximate derivative in x-direction
-    horizontal_edges = np.zeros_like(X_reshaped)
-    horizontal_edges[:, :, 1:-1] = (X_reshaped[:, :, 2:] - X_reshaped[:, :, :-2]) / 2.0
+    # Compute gradients using central differences
+    gx = np.zeros_like(X_reshaped)
+    gy = np.zeros_like(X_reshaped)
+    gx[:, :, 1:-1] = (X_reshaped[:, :, 2:] - X_reshaped[:, :, :-2]) / 2.0
+    gy[:, 1:-1, :] = (X_reshaped[:, 2:, :] - X_reshaped[:, :-2, :]) / 2.0
 
-    # Compute vertical gradients (detects horizontal edges)
-    # Approximate derivative in y-direction
-    vertical_edges = np.zeros_like(X_reshaped)
-    vertical_edges[:, 1:-1, :] = (X_reshaped[:, 2:, :] - X_reshaped[:, :-2, :]) / 2.0
+    # Compute gradient magnitude and orientation
+    magnitude = np.sqrt(gx**2 + gy**2)
+    orientation = np.arctan2(gy, gx) * 180 / np.pi  # Convert to degrees
+    orientation = (orientation + 180) % 180  # Map to [0, 180)
 
-    # Flatten all features
-    X_pixels_flat = X_pixels  # Already flat (n_examples, 784)
-    horizontal_edges_flat = horizontal_edges.reshape(n_examples, -1)  # (n_examples, 784)
-    vertical_edges_flat = vertical_edges.reshape(n_examples, -1)  # (n_examples, 784)
+    # HOG parameters
+    cell_size = 4  # 4x4 pixels per cell (28/4 = 7 cells per dimension)
+    n_bins = 9     # 9 orientation bins (0-180 degrees, 20 degrees per bin)
+    n_cells = 28 // cell_size  # 7 cells per dimension
 
-    # Concatenate: original pixels + horizontal edges + vertical edges + bias
-    # Total: 784 + 784 + 784 + 1 = 2353 features
-    return np.concatenate([X_pixels_flat, horizontal_edges_flat, vertical_edges_flat, bias], axis=1)
+    # Extract HOG features for all examples
+    hog_features = []
+
+    for img_idx in range(n_examples):
+        cell_histograms = []
+
+        for i in range(n_cells):
+            for j in range(n_cells):
+                # Extract cell region
+                cell_mag = magnitude[img_idx,
+                                   i*cell_size:(i+1)*cell_size,
+                                   j*cell_size:(j+1)*cell_size]
+                cell_orient = orientation[img_idx,
+                                        i*cell_size:(i+1)*cell_size,
+                                        j*cell_size:(j+1)*cell_size]
+
+                # Compute histogram of oriented gradients for this cell
+                hist = np.zeros(n_bins)
+                bin_width = 180.0 / n_bins  # 20 degrees per bin
+
+                for y in range(cell_size):
+                    for x in range(cell_size):
+                        angle = cell_orient[y, x]
+                        mag = cell_mag[y, x]
+                        bin_idx = int(angle / bin_width) % n_bins
+                        hist[bin_idx] += mag
+
+                cell_histograms.append(hist)
+
+        # Flatten all cell histograms for this image
+        # 7x7 cells x 9 bins = 441 features
+        hog_features.append(np.concatenate(cell_histograms))
+
+    hog_features = np.array(hog_features)
+
+    # Concatenate: original pixels + HOG features + bias
+    # Total: 784 + 441 + 1 = 1226 features
+    return np.concatenate([X_pixels, hog_features, bias], axis=1)
 
 def main(args):
     utils.configure_seed(seed=args.seed)
