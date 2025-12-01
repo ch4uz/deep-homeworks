@@ -85,7 +85,11 @@ class LogisticRegressor:
 def feature_extractor(X):
     """
     X: (n_examples, 785) - flattened 28x28 images + bias term
-    Returns: (n_examples, 813) - images with row indices added before each row + bias
+    Returns: (n_examples, 2353) - original pixels + horizontal edges + vertical edges + bias
+
+    Applies edge detection using gradient-based filters (Sobel-like):
+    - Horizontal edges: detect vertical strokes
+    - Vertical edges: detect horizontal strokes
     """
     n_examples = X.shape[0]
 
@@ -96,20 +100,24 @@ def feature_extractor(X):
     # Reshape to (n_examples, 28, 28)
     X_reshaped = X_pixels.reshape(n_examples, 28, 28)
 
-    # Create row indices (0-27) and reshape to broadcast
-    row_indices = np.arange(28).reshape(1, 28, 1)
+    # Compute horizontal gradients (detects vertical edges)
+    # Approximate derivative in x-direction
+    horizontal_edges = np.zeros_like(X_reshaped)
+    horizontal_edges[:, :, 1:-1] = (X_reshaped[:, :, 2:] - X_reshaped[:, :, :-2]) / 2.0
 
-    # Repeat row indices for all examples
-    row_indices = np.broadcast_to(row_indices, (n_examples, 28, 1))
+    # Compute vertical gradients (detects horizontal edges)
+    # Approximate derivative in y-direction
+    vertical_edges = np.zeros_like(X_reshaped)
+    vertical_edges[:, 1:-1, :] = (X_reshaped[:, 2:, :] - X_reshaped[:, :-2, :]) / 2.0
 
-    # Concatenate row indices before each row of 28 pixels
-    X_with_indices = np.concatenate([row_indices, X_reshaped], axis=2)
+    # Flatten all features
+    X_pixels_flat = X_pixels  # Already flat (n_examples, 784)
+    horizontal_edges_flat = horizontal_edges.reshape(n_examples, -1)  # (n_examples, 784)
+    vertical_edges_flat = vertical_edges.reshape(n_examples, -1)  # (n_examples, 784)
 
-    # Flatten back to (n_examples, 812) - each row now has 29 values (1 index + 28 pixels)
-    X_flattened = X_with_indices.reshape(n_examples, -1)
-
-    # Append the bias term back at the end
-    return np.concatenate([X_flattened, bias], axis=1)
+    # Concatenate: original pixels + horizontal edges + vertical edges + bias
+    # Total: 784 + 784 + 784 + 1 = 2353 features
+    return np.concatenate([X_pixels_flat, horizontal_edges_flat, vertical_edges_flat, bias], axis=1)
 
 def main(args):
     utils.configure_seed(seed=args.seed)
