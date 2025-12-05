@@ -14,6 +14,11 @@ import utils
 
 
 class FeedforwardNetwork(nn.Module):
+
+    ACTIVATION_MAP = {
+        'relu': nn.ReLU
+    }
+
     def __init__(
             self, t, n_features, hidden_size, layers,
             activation_type, dropout, **kwargs):
@@ -27,8 +32,24 @@ class FeedforwardNetwork(nn.Module):
             dropout (float): dropout probability
         """
         super().__init__()
-        
-        raise NotImplementedError()
+
+    
+
+        if activation_type not in self.ACTIVATION_MAP:
+            raise ValueError(f"unsupported activation type: {activation_type}")
+        self.activation = self.ACTIVATION_MAP[activation_type]()
+
+        model = []
+
+        model.append(nn.Linear(n_features, hidden_size))
+        for i in range(layers):
+            model.append(nn.Linear(hidden_size, hidden_size))
+            model.append(self.activation)
+            model.append(nn.Dropout(dropout))
+        model.append(nn.Linear(hidden_size, t))
+
+        self.model = nn.Sequential(*model)
+
 
     def forward(self, x, **kwargs):
         """ Compute a forward pass through the FFN
@@ -37,7 +58,8 @@ class FeedforwardNetwork(nn.Module):
         Returns:
             scores (torch.Tensor)
         """
-        raise NotImplementedError()
+
+        return self.model(x)
     
     
 def train_batch(X, y, model, optimizer, criterion, **kwargs):
@@ -51,7 +73,15 @@ def train_batch(X, y, model, optimizer, criterion, **kwargs):
     Returns:
         loss (float)
     """
-    raise NotImplementedError()
+
+    optimizer.zero_grad()
+    pred = model(X)
+    loss = criterion(pred, y)
+    loss.backward()
+    optimizer.step()
+    return loss.item()
+
+
 
 
 def predict(model, X):
@@ -62,7 +92,9 @@ def predict(model, X):
     Returns:
         preds: (n_examples)
     """
-    raise NotImplementedError()
+    model.eval()
+    scores = model(X)
+    return scores.argmax(dim=1)
 
 
 @torch.no_grad()
@@ -76,7 +108,14 @@ def evaluate(model, X, y, criterion):
     Returns:
         loss, accuracy (Tuple[float, float])
     """
-    raise NotImplementedError()
+    model.eval()
+    scores = model(X)
+    preds = scores.argmax(dim=1)
+    loss = criterion(scores, y)
+
+    acc = (preds == y).float().mean()
+
+    return loss.item(), acc.item()
 
 
 def plot(epochs, plottables, filename=None, ylim=None):
@@ -111,7 +150,9 @@ def main():
                         choices=['tanh', 'relu'], default='relu')
     parser.add_argument('-optimizer',
                         choices=['sgd', 'adam'], default='sgd')
-    parser.add_argument('-data_path', type=str, default='emnist-letters.npz',)
+    parser.add_argument('-data_path', type=str, default='data/emnist-letters.npz',)
+    parser.add_argument('-model', type=str, default='ffn', 
+                        help="Name of the model for file saving.")
     opt = parser.parse_args()
 
     utils.configure_seed(seed=42)
@@ -120,7 +161,7 @@ def main():
     dataset = utils.ClassificationDataset(data)
     train_dataloader = DataLoader(
         dataset, batch_size=opt.batch_size, shuffle=True, generator=torch.Generator().manual_seed(42))
-    train_X, train_y = dataset.train_X, dataset.train_y
+    train_X, train_y = dataset.X, dataset.y
     dev_X, dev_y = dataset.dev_X, dataset.dev_y
     test_X, test_y = dataset.test_X, dataset.test_y
 
@@ -152,7 +193,8 @@ def main():
     criterion = nn.CrossEntropyLoss()
 
     # training loop
-    epochs = torch.arange(1, opt.epochs + 1)
+    train_epochs = torch.arange(1, opt.epochs + 1)
+    plot_epochs = range(0, opt.epochs + 1)
     train_losses = []
     train_accs = []
     valid_losses = []
@@ -169,7 +211,7 @@ def main():
     valid_accs.append(initial_val_acc)
     print('initial val acc: {:.4f}'.format(initial_val_acc))
 
-    for ii in epochs:
+    for ii in train_epochs:
         print('Training epoch {}'.format(ii))
         epoch_train_losses = []
         model.train()
@@ -212,11 +254,11 @@ def main():
         "Valid Loss": valid_losses,
     }
 
-    plot(epochs, losses, filename=f'{opt.model}-training-loss-{config}.pdf')
+    plot(plot_epochs, losses, filename=f'{opt.model}-training-loss-{config}.pdf')
     print(f"Final Training Accuracy: {train_accs[-1]:.4f}")
     print(f"Best Validation Accuracy: {max(valid_accs):.4f}")
     val_accuracy = { "Valid Accuracy": valid_accs }
-    plot(epochs, val_accuracy, filename=f'{opt.model}-validation-accuracy-{config}.pdf')
+    plot(plot_epochs, val_accuracy, filename=f'{opt.model}-validation-accuracy-{config}.pdf')
 
 
 if __name__ == '__main__':
