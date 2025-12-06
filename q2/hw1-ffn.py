@@ -8,19 +8,23 @@ import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from matplotlib import pyplot as plt
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import time
-import utils
+import utils.utils as utils
 
 
 class FeedforwardNetwork(nn.Module):
 
     ACTIVATION_MAP = {
-        'relu': nn.ReLU
+        'relu': nn.ReLU,
+        'tanh': nn.Tanh,
     }
 
     def __init__(
-            self, t, n_features, hidden_size, layers,
+            self, n_classes, n_features, hidden_size, layers,
             activation_type, dropout, **kwargs):
         """ Define a vanilla multiple-layer FFN with `layers` hidden layers 
         Args:
@@ -41,12 +45,14 @@ class FeedforwardNetwork(nn.Module):
 
         model = []
 
-        model.append(nn.Linear(n_features, hidden_size))
-        for i in range(layers):
-            model.append(nn.Linear(hidden_size, hidden_size))
+        current_input_size = n_features
+        for _ in range(layers):
+            model.append(nn.Linear(current_input_size, hidden_size))
             model.append(self.activation)
             model.append(nn.Dropout(dropout))
-        model.append(nn.Linear(hidden_size, t))
+            current_input_size = hidden_size
+
+        model.append(nn.Linear(hidden_size, n_classes))
 
         self.model = nn.Sequential(*model)
 
@@ -254,12 +260,11 @@ def main():
         "Valid Loss": valid_losses,
     }
 
-    plot(plot_epochs, losses, filename=f'{opt.model}-training-loss-{config}.pdf')
+    plot(plot_epochs, losses, filename=f'q2/plots/{opt.model}-training-loss-{config}.pdf')
     print(f"Final Training Accuracy: {train_accs[-1]:.4f}")
     print(f"Best Validation Accuracy: {max(valid_accs):.4f}")
     val_accuracy = { "Valid Accuracy": valid_accs }
-    plot(plot_epochs, val_accuracy, filename=f'{opt.model}-validation-accuracy-{config}.pdf')
-
+    plot(plot_epochs, val_accuracy, filename=f'q2/plots/{opt.model}-validation-accuracy-{config}.pdf')
 
 if __name__ == '__main__':
     main()

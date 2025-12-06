@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import numpy as np
 
-import utils
+import utils.utils as utils
 
 class LogisticRegressor:
     def __init__(self, n_classes, n_features, learning_rate=0.0001, l2_penalty=0.00001):
