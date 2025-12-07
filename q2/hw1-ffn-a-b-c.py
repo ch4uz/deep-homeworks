@@ -266,8 +266,8 @@ def run_best_model_and_plot(train_dataloader, train_X, train_y, dev_X, dev_y, te
         
         print(f"Epoch {i}: Train Loss {avg_train_loss:.4f}, Val Acc {val_acc:.4f}")
 
-    plot(plot_epochs, {"Train Loss": train_losses}, filename=f'q2/plots/Q2-best-model-loss-b.pdf')
-    plot(plot_epochs, {"Valid Accuracy": valid_accs}, filename=f'q2/plots/Q2-best-model-accuracy-b.pdf')
+    plot(plot_epochs, {"Train Loss": train_losses}, filename=f'q2/plots/Q2-ffn-best-model-loss-b.pdf')
+    plot(plot_epochs, {"Valid Accuracy": valid_accs}, filename=f'q2/plots/Q2-ffn-best-model-accuracy-b.pdf')
  
     _, test_acc = evaluate(model, test_X, test_y, criterion)
     print(f"\nFinal Test Accuracy of Best Model: {test_acc:.4f}")
@@ -407,7 +407,9 @@ def main():
     widths = sorted(hidden_sizes)
     best_configs_per_width = []
 
-    print("\nAnalyzing best models for each width")
+    print(f"\n{'#'*60}")
+    print("C: Analyzing best models for each width")
+    print(f"{'#'*60}")
 
     for width in widths:
         width_results = [r for r in a_results if r['hidden_size'] == width]
@@ -427,7 +429,7 @@ def main():
     plt.ylabel('Final Training Accuracy')
     plt.title('Effect of Width on Training Interpolation')
     plt.grid(True)
-    plt.savefig('q2/plots/Q2-width-vs-train-acc.pdf')
+    plt.savefig('q2/plots/Q2-ffn-width-vs-train-acc-c.pdf')
 
     # Save results
     c_data = {
