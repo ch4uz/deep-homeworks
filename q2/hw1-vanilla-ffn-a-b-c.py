@@ -267,8 +267,8 @@ def run_best_model_and_plot(train_dataloader, train_X, train_y, dev_X, dev_y, te
         
         print(f"Epoch {i}: Train Loss {avg_train_loss:.4f}, Val Acc {val_acc:.4f}")
 
-    plot(plot_epochs, {"Train Loss": train_losses}, filename=f'q2/plots/Q2-ffn-best-model-loss-23b.pdf')
-    plot(plot_epochs, {"Valid Accuracy": valid_accs}, filename=f'q2/plots/Q2-ffn-best-model-accuracy-23b.pdf')
+    plot(plot_epochs, {"Train Loss": train_losses}, filename=f'q2/plots/Q2-vanilla-ffn-best-model-loss-b.pdf')
+    plot(plot_epochs, {"Valid Accuracy": valid_accs}, filename=f'q2/plots/Q2-vanilla-ffn-best-model-accuracy-b.pdf')
  
     _, test_acc = evaluate(model, test_X, test_y, criterion)
     print(f"\nFinal Test Accuracy of Best Model: {test_acc:.4f}")
@@ -300,9 +300,9 @@ def main():
     parser.add_argument('-data_path', type=str, default='data/emnist-letters.npz',)
     parser.add_argument('-model', type=str, default='ffn', 
                         help="Name of the model for file saving.")
-    parser.add_argument('-scores_23a', type=str, default='q2/scores/Q2-ffn-scores-23a.json')
-    parser.add_argument('-scores_23b', type=str, default='q2/scores/Q2-ffn-scores-23b.json')
-    parser.add_argument('-scores_23c', type=str, default='q2/scores/Q2-ffn-scores-23c.json')
+    parser.add_argument('-scores_a', type=str, default='q2/scores/Q2-vanilla-ffn-scores-a.json')
+    parser.add_argument('-scores_b', type=str, default='q2/scores/Q2-vanilla-ffn-scores-b.json')
+    parser.add_argument('-scores_c', type=str, default='q2/scores/Q2-vanilla-ffn-scores-c.json')
 
     opt = parser.parse_args()
 
@@ -389,8 +389,8 @@ def main():
     print("="*90)
 
     # Save results
-    Path(opt.scores_23a).parent.mkdir(parents=True, exist_ok=True)
-    with open(opt.scores_23a, "w") as f:
+    Path(opt.scores_a).parent.mkdir(parents=True, exist_ok=True)
+    with open(opt.scores_a, "w") as f:
         json.dump({"q2_3a_search": a_results}, f, indent=4)
 
 
@@ -403,7 +403,7 @@ def main():
         n_feats, n_classes, global_best_config, opt.epochs
     )
 
-    with open(opt.scores_23b, "w") as f:
+    with open(opt.scores_b, "w") as f:
         json.dump(b_results, f, indent=4)
 
 
@@ -429,7 +429,7 @@ def main():
     plt.ylabel('Final Training Accuracy')
     plt.title('Training accuracy in the function of depth')
     plt.grid(True)
-    plt.savefig('q2/plots/Q2-ffn-depth-vs-train-acc-23c.pdf')
+    plt.savefig('q2/plots/Q2-vanilla-ffn-depth-vs-train-acc-c.pdf')
     print("saved figure")
 
     c_data = {
@@ -439,7 +439,7 @@ def main():
         },
     }
     
-    with open(opt.scores_23c, "w") as f:
+    with open(opt.scores_c, "w") as f:
         json.dump(c_data, f, indent=4)
 
 if __name__ == '__main__':
