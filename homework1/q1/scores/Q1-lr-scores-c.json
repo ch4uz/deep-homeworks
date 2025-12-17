@@ -1,0 +1,134 @@
+{
+    "all_results": [
+        {
+            "config_name": "original_lr0.001_l20.0001",
+            "learning_rate": 0.001,
+            "l2_penalty": 0.0001,
+            "best_valid_acc": 0.7190384615384615,
+            "best_epoch": 20,
+            "test_acc": 0.7200961538461539,
+            "training_time": 126.42649030685425,
+            "feature_type": "original"
+        },
+        {
+            "config_name": "original_lr0.001_l21e-05",
+            "learning_rate": 0.001,
+            "l2_penalty": 1e-05,
+            "best_valid_acc": 0.7207211538461539,
+            "best_epoch": 18,
+            "test_acc": 0.7227884615384615,
+            "training_time": 95.53860807418823,
+            "feature_type": "original"
+        },
+        {
+            "config_name": "original_lr0.0001_l20.0001",
+            "learning_rate": 0.0001,
+            "l2_penalty": 0.0001,
+            "best_valid_acc": 0.6967307692307693,
+            "best_epoch": 20,
+            "test_acc": 0.6969711538461538,
+            "training_time": 159.64664554595947,
+            "feature_type": "original"
+        },
+        {
+            "config_name": "original_lr0.0001_l21e-05",
+            "learning_rate": 0.0001,
+            "l2_penalty": 1e-05,
+            "best_valid_acc": 0.697548076923077,
+            "best_epoch": 20,
+            "test_acc": 0.6975961538461538,
+            "training_time": 134.03787422180176,
+            "feature_type": "original"
+        },
+        {
+            "config_name": "original_lr1e-05_l20.0001",
+            "learning_rate": 1e-05,
+            "l2_penalty": 0.0001,
+            "best_valid_acc": 0.6177884615384616,
+            "best_epoch": 20,
+            "test_acc": 0.6165384615384616,
+            "training_time": 169.39042711257935,
+            "feature_type": "original"
+        },
+        {
+            "config_name": "original_lr1e-05_l21e-05",
+            "learning_rate": 1e-05,
+            "l2_penalty": 1e-05,
+            "best_valid_acc": 0.6171634615384616,
+            "best_epoch": 20,
+            "test_acc": 0.6166826923076923,
+            "training_time": 127.90473294258118,
+            "feature_type": "original"
+        },
+        {
+            "config_name": "hog_lr0.001_l20.0001",
+            "learning_rate": 0.001,
+            "l2_penalty": 0.0001,
+            "best_valid_acc": 0.8916826923076923,
+            "best_epoch": 19,
+            "test_acc": 0.8914423076923077,
+            "training_time": 174.88299298286438,
+            "feature_type": "hog"
+        },
+        {
+            "config_name": "hog_lr0.001_l21e-05",
+            "learning_rate": 0.001,
+            "l2_penalty": 1e-05,
+            "best_valid_acc": 0.8921634615384615,
+            "best_epoch": 20,
+            "test_acc": 0.8915384615384615,
+            "training_time": 176.44418692588806,
+            "feature_type": "hog"
+        },
+        {
+            "config_name": "hog_lr0.0001_l20.0001",
+            "learning_rate": 0.0001,
+            "l2_penalty": 0.0001,
+            "best_valid_acc": 0.8715865384615384,
+            "best_epoch": 20,
+            "test_acc": 0.8702403846153847,
+            "training_time": 210.13645362854004,
+            "feature_type": "hog"
+        },
+        {
+            "config_name": "hog_lr0.0001_l21e-05",
+            "learning_rate": 0.0001,
+            "l2_penalty": 1e-05,
+            "best_valid_acc": 0.8713942307692307,
+            "best_epoch": 20,
+            "test_acc": 0.8697115384615385,
+            "training_time": 187.1153473854065,
+            "feature_type": "hog"
+        },
+        {
+            "config_name": "hog_lr1e-05_l20.0001",
+            "learning_rate": 1e-05,
+            "l2_penalty": 0.0001,
+            "best_valid_acc": 0.795625,
+            "best_epoch": 20,
+            "test_acc": 0.7978846153846154,
+            "training_time": 129.94951820373535,
+            "feature_type": "hog"
+        },
+        {
+            "config_name": "hog_lr1e-05_l21e-05",
+            "learning_rate": 1e-05,
+            "l2_penalty": 1e-05,
+            "best_valid_acc": 0.7955288461538461,
+            "best_epoch": 20,
+            "test_acc": 0.7981730769230769,
+            "training_time": 130.1216824054718,
+            "feature_type": "hog"
+        }
+    ],
+    "best_config": {
+        "config_name": "hog_lr0.001_l21e-05",
+        "learning_rate": 0.001,
+        "l2_penalty": 1e-05,
+        "best_valid_acc": 0.8921634615384615,
+        "best_epoch": 20,
+        "test_acc": 0.8915384615384615,
+        "training_time": 176.44418692588806,
+        "feature_type": "hog"
+    }
+}
