@@ -27,7 +27,7 @@ with_softmax=False
 batch_size = 64
 learning_rate = 0.001
 model = Q1Net(with_softmax, with_maxpool)
-epochs = 1
+epochs = 200
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 criterion = nn.CrossEntropyLoss()
 
