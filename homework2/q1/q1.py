@@ -22,8 +22,31 @@ from q1_network import Q1Net
 
 BASE_DIR="homework2/q1/"
 
-with_maxpool=False
-with_softmax=False
+# Training results:
+#
+# No softmax, no max pooling:
+# Loss: 0.0000 | Val Acc: 0.9252 | Test Acc: 0.9249 | Time: 8.73 sec
+# Total training time: 147.14 minutes (8828.69 seconds)
+# Final Test acc: 0.9249
+#
+# With softmax:
+# Loss: 2.1367 | Val Acc: 0.1373 | Test Acc: 0.1374 | Time: 9.11 sec
+# Total training time: 30.51 minutes (1830.88 seconds)
+# Final Test acc: 0.1374
+#
+# With max pooling: 7.74 minutes
+# Loss: 0.0000 | Val Acc: 0.9474 | Test Acc: 0.9456 | Time: 2.47 sec
+# Total training time: 7.74 minutes (464.31 seconds)
+# Final Test acc: 0.9456
+#
+# With softmax and max pooling:
+# Loss: 1.3619 | Val Acc: 0.8721 | Test Acc: 0.8661 | Time: 2.37 sec
+# Total training time: 12.71 minutes (762.58 seconds)
+# Final Test acc: 0.8661
+#
+
+with_maxpool=True
+with_softmax=True
 batch_size = 64
 learning_rate = 0.001
 model = Q1Net(with_softmax, with_maxpool)
@@ -32,7 +55,17 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 criterion = nn.CrossEntropyLoss()
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
+if torch.backends.mps.is_available():
+    device = torch.device("mps")
+    print("MPS device found")
+elif torch.cuda.is_available():
+    device = torch.device("cuda")
+    print("CUDA device found")
+else:
+    device = torch.device("cpu")
+    print("No GPU available, using CPU")
 print(f"Using device: {device}")
+model = model.to(device)
 
 # Data Loading
 
